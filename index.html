@@ -1,89 +1,159 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login / Register</title>
+  <title>Auth System</title>
   <style>
-    body { font-family: Arial; display: flex; justify-content: center; margin-top: 100px; }
-    .container { width: 300px; }
-    input { width: 100%; padding: 8px; margin: 5px 0; }
-    button { width: 100%; padding: 8px; margin-top: 10px; }
-    .link { color: blue; cursor: pointer; margin-top: 10px; display: block; }
+    body {
+      font-family: Arial;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f4f4f4;
+    }
+
+    .container {
+      width: 340px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .toggle button {
+      width: 48%;
+      padding: 6px;
+      margin: 2px;
+      cursor: pointer;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+    }
+
+    button.action {
+      width: 100%;
+      padding: 8px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 10px;
+      cursor: pointer;
+      color: blue;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
 
-  <div id="loginBox">
-    <h2>Login</h2>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <span class="link" onclick="showRegister()">Haven't signed up yet? Register now</span>
+  <!-- Email / Mobile Toggle -->
+  <div class="toggle">
+    <button onclick="showEmail()">Email</button>
+    <button onclick="showMobile()">Mobile</button>
   </div>
 
-  <div id="registerBox" style="display:none;">
-    <h2>Register</h2>
-    <input type="email" id="registerEmail" placeholder="Email">
-    <input type="password" id="registerPassword" placeholder="Password">
-    <button onclick="register()">Register</button>
-    <span class="link" onclick="showLogin()">Already have an account? Login</span>
+  <!-- EMAIL LOGIN -->
+  <div id="emailBox">
+    <h3>Email Login</h3>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button class="action" onclick="emailRegister()">Register</button>
+    <button class="action" onclick="emailLogin()">Login</button>
+  </div>
+
+  <!-- MOBILE LOGIN -->
+  <div id="mobileBox" style="display:none;">
+    <h3>Mobile Login</h3>
+    <input type="text" id="phone" placeholder="+91XXXXXXXXXX">
+    <div id="recaptcha-container"></div>
+    <button class="action" onclick="sendOTP()">Send OTP</button>
+
+    <input type="text" id="otp" placeholder="Enter OTP">
+    <button class="action" onclick="verifyOTP()">Verify OTP</button>
   </div>
 
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber }
   from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyC0ADj96dh05qBY-dr_fILmVNR4-hXAW-8",
+    authDomain: "registeration-system-6836d.firebaseapp.com",
+    projectId: "registeration-system-6836d",
+    storageBucket: "registeration-system-6836d.firebasestorage.app",
+    messagingSenderId: "214549658629",
+    appId: "1:214549658629:web:2aa8a3d84035287c0e306c"
   };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  window.showRegister = () => {
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("registerBox").style.display = "block";
+  // Toggle
+  window.showEmail = () => {
+    document.getElementById("emailBox").style.display = "block";
+    document.getElementById("mobileBox").style.display = "none";
   }
 
-  window.showLogin = () => {
-    document.getElementById("registerBox").style.display = "none";
-    document.getElementById("loginBox").style.display = "block";
+  window.showMobile = () => {
+    document.getElementById("emailBox").style.display = "none";
+    document.getElementById("mobileBox").style.display = "block";
   }
 
-  window.register = () => {
-    const email = document.getElementById("registerEmail").value;
-    const password = document.getElementById("registerPassword").value;
+  // Email Register
+  window.emailRegister = () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
     createUserWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        alert("Registration successful!");
-        window.location.href = "home.html";
-      })
-      .catch((error) => {
-        alert(error.message);
-      });
+      .then(() => window.location.href = "home.html")
+      .catch(error => alert(error.message));
   }
 
-  window.login = () => {
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
+  // Email Login
+  window.emailLogin = () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
     signInWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        alert("Login successful!");
-        window.location.href = "home.html";
-      })
-      .catch((error) => {
-        alert("Wrong email or password");
-      });
+      .then(() => window.location.href = "home.html")
+      .catch(() => alert("Wrong email or password"));
   }
+
+  // Phone Auth
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    size: 'normal',
+  });
+
+  window.sendOTP = () => {
+    const phoneNumber = document.getElementById("phone").value;
+
+    signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
+      .then((confirmationResult) => {
+        window.confirmationResult = confirmationResult;
+        alert("OTP Sent");
+      })
+      .catch(error => alert(error.message));
+  }
+
+  window.verifyOTP = () => {
+    const code = document.getElementById("otp").value;
+
+    window.confirmationResult.confirm(code)
+      .then(() => window.location.href = "home.html")
+      .catch(() => alert("Invalid OTP"));
+  }
+
 </script>
 
 </body>
